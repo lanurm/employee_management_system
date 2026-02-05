@@ -50,7 +50,6 @@ COPY main.py .
 COPY db.py .
 COPY crud.py .
 COPY models.py .
-COPY frontend/ ./frontend/
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \

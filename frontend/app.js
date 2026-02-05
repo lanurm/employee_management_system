@@ -3,7 +3,21 @@
  * Handles all API interactions and UI updates
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+// Dynamic API URL based on environment
+const API_BASE_URL = (() => {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    
+    // In Docker: frontend runs on port 3000, API proxied through /api/
+    if (port === '3000' || hostname === 'localhost' || hostname === '127.0.0.1') {
+        // Use relative URL that will be proxied by Nginx
+        return `${protocol}//${hostname}${port ? ':' + port : ''}/api`;
+    }
+    
+    // Fallback to direct backend connection
+    return `${protocol}//${hostname}:8000`;
+})();
 
 // State
 let employees = [];

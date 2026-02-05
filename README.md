@@ -1,17 +1,130 @@
 # Employee Management System
 
-A simple REST API backend for managing employee records using **Python**, **FastAPI**, and **MySQL**.
+A complete full-stack REST API application for managing employee records using **Python**, **FastAPI**, **Vanilla JavaScript**, **MySQL**, and **Docker**.
 
 ## 📁 Project Structure
 
 ```
 employee_management_system/
-├── main.py           # FastAPI application with REST endpoints
-├── db.py             # MySQL database connection handling
-├── models.py         # Employee class and Pydantic models
-├── crud.py           # CRUD operations (Create, Read, Update, Delete)
-├── requirements.txt  # Python dependencies
-└── README.md         # Project documentation
+├── main.py              # FastAPI application with REST endpoints
+├── db.py                # MySQL database connection handling
+├── models.py            # Employee class and Pydantic models
+├── crud.py              # CRUD operations (Create, Read, Update, Delete)
+├── requirements.txt     # Python dependencies
+├── Dockerfile           # Backend Docker image
+├── docker-compose.yml   # Multi-container orchestration
+├── frontend/
+│   ├── index.html       # Main HTML page
+│   ├── app.js           # Frontend JavaScript with dynamic API URL
+│   ├── styles.css       # Styling
+│   ├── Dockerfile       # Frontend Docker image (Nginx)
+│   └── nginx.conf       # Nginx configuration with API proxy
+└── README.md            # Project documentation
+```
+
+## 🐳 Docker Deployment
+
+### Prerequisites
+- Docker installed and running
+- Docker Compose installed
+
+### Running with Docker Compose
+
+```bash
+# Build and start all services
+docker-compose up --build
+
+# Run in background
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### Service Details
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| **frontend** | 3000 | Nginx serving static files + API proxy |
+| **app** | 8000 | FastAPI backend (API endpoints) |
+| **db** | 3307 | MySQL database |
+
+### Accessing the Application
+
+- **Frontend**: http://localhost:3000
+- **API Docs**: http://localhost:3000/api/docs (proxied through Nginx)
+- **API Health**: http://localhost:8000/health
+
+### What Was Fixed
+
+1. **Frontend Dockerization**: Created a new Dockerfile for the frontend using Nginx
+2. **Port Binding**: Frontend now runs on port 3000 with Nginx as a web server
+3. **API Proxy**: Nginx proxies `/api/*` requests to the backend container
+4. **Dynamic API URL**: Frontend `app.js` now uses dynamic URL detection for Docker compatibility
+5. **Service Orchestration**: docker-compose.yml now includes all three services (frontend, backend, database)
+6. **Network Communication**: Services communicate via Docker network (employee-network)
+
+### Environment Variables in Docker
+
+The backend container automatically uses Docker environment variables:
+
+```
+DB_HOST=db (internal Docker hostname)
+DB_PORT=3306 (internal Docker port)
+DB_USER=root
+DB_PASSWORD=mrunal
+DB_NAME=employee_db
+```
+
+### Troubleshooting Docker Setup
+
+```bash
+# View all running containers
+docker-compose ps
+
+# Check logs for specific service
+docker-compose logs frontend
+docker-compose logs app
+docker-compose logs db
+
+# Rebuild everything from scratch
+docker-compose down -v
+docker-compose up --build
+
+# Test API connectivity
+curl http://localhost:3000/api/health
+
+# Access backend directly (bypassing Nginx)
+curl http://localhost:8000/health
+```
+
+```
+┌─────────────────────────────────────────────┐
+│         Your Browser                        │
+│     http://localhost:3000                   │
+└────────────────────┬────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────┐
+│        Frontend Container (Nginx)           │
+│  - Serves index.html, app.js, styles.css    │
+│  - Proxies /api/* → Backend (app:8000)      │
+└────────────────────┬────────────────────────┘
+                     │
+            ┌────────┴────────┐
+            ▼                 ▼
+┌──────────────────┐   ┌──────────────────┐
+│  Backend         │   │  Database        │
+│  (FastAPI)       │   │  (MySQL)         │
+│  :8000           │   │  :3306           │
+│                  │   │                  │
+│  - REST API      │   │  - employee_db   │
+│  - CORS enabled  │   │  - tables        │
+│  - Health checks │   │  - data storage  │
+└──────────────────┘   └──────────────────┘
 ```
 
 ## 🗄️ Database Setup

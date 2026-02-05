@@ -1,11 +1,31 @@
 # ============================================
 # Employee Management System - Docker Compose
 # ============================================
-# Complete stack: FastAPI backend + MySQL database
+# Complete stack: Nginx frontend + FastAPI backend + MySQL database
 
 version: '3.8'
 
 services:
+  # Nginx Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: employee-management-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - employee-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   # FastAPI Backend Application
   app:
     build:
