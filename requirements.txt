@@ -1,0 +1,17 @@
+# Employee Management System - Dependencies
+# Install using: pip install -r requirements.txt
+
+# FastAPI - Modern web framework for building APIs
+fastapi==0.109.0
+
+# Uvicorn - ASGI server to run FastAPI
+uvicorn[standard]==0.27.0
+
+# MySQL Connector - Official MySQL driver for Python
+mysql-connector-python==8.3.0
+
+# Pydantic - Data validation (included with FastAPI, but listed for clarity)
+pydantic==2.5.3
+
+# Optional: For email validation in Pydantic
+email-validator==2.1.0

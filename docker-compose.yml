@@ -1,0 +1,66 @@
+# ============================================
+# Employee Management System - Docker Compose
+# ============================================
+# Complete stack: FastAPI backend + MySQL database
+
+version: '3.8'
+
+services:
+  # FastAPI Backend Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: employee-management-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Database configuration (override db.py defaults)
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=mrunal
+      - DB_NAME=employee_db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - employee-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: employee-management-db
+    ports:
+      - "3307:3306"  # Using 3307 to avoid conflict with local MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: mrunal
+      MYSQL_DATABASE: employee_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - employee-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmrunal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# Named volumes for data persistence
+volumes:
+  mysql_data:
+    driver: local
+
+# Custom network for service communication
+networks:
+  employee-network:
+    driver: bridge
